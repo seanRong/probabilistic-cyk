@@ -1,7 +1,5 @@
 import sys
-import nltk
 from node import node
-from nltk.stem import WordNetLemmatizer
 grammar_file = sys.argv[1]
 sentence = sys.argv[2].lower().split(' ')
 
@@ -84,7 +82,6 @@ for i in range(len(g)):
                     lex[c] = ls
 
 print(grammar)
-# print(lex)
 
 # CKY parsing
 cky = [[[] for x in range(len(sentence))] for y in range(len(sentence))]
@@ -114,19 +111,7 @@ for i in range(len(sentence)):
     word = sentence[i]
     stem_word = ''
     lexical = ''
-    isStem = False
-    if word not in lex:
-        stemmer = WordNetLemmatizer()
-        stem_word = stemmer.lemmatize(word, pos='v')
-        print('stem:' + stem_word)
-        isStem = True
-    if isStem:
-        if stem_word not in lex:
-            print('The word ' + word + ' is not in the grammar')
-            exit()
-        else: lexical = lex[stem_word]
-    else:
-        lexical = lex[word]
+    lexical = lex[word]
     for key in lexical:
         n = node(key, None, None, word, lexical[key])
         nodes_back[i][i].append(n)
@@ -150,24 +135,6 @@ for i in range(len(sentence)):
                                 nodes_back[i][i].append(n)
                                 extra.append(n)
     check_extra(nodes_back, cky, extra, grammar, i, i)
-    # Check whether there are other new rules
-    '''
-    while(len(extra) > 0):
-        for r in extra:
-            for rule in grammar:
-                right_list = grammar[rule]
-                for detail in right_list:
-                    if len(detail[0]) == 1:
-                        if r == detail[0][0]:
-                            map[rule] = map[r] * detail[1]
-                            extra.append(rule)
-
-                            for nodes in nodes_back[i][i]:
-                                if nodes.root == r:
-                                    nodes_back[i][i].append(node(rule, None, nodes, None))
-            extra.remove(r)
-    '''
-
 
     # Find in grammar
     # Case 2: A -> B C
@@ -210,6 +177,7 @@ def printTree(root):
     return '[' + root.root + ' ' + left + ' ' + right + ']'
 
 terminal_list = nodes_back[0][len(sentence) - 1]
+flag = False
 for final_node in terminal_list:
     if(final_node.root == 'S'):
         print('The possibility of this sentence is:' + str(final_node.score))
